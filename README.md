@@ -67,6 +67,35 @@ The application uses basic authentication to secure the API endpoints. You need 
     curl -u yourusername:yourpassword http://localhost:9095/api/metrics
     ```
 
+### Sample Output
+
+#### `GET /api/metrics`
+
+```json
+{
+  "status": "success",
+  "message": "Container metrics retrieved successfully",
+  "data": {
+    "container_metrics": [
+      {
+        "container_id": "f3f177b2b3b4",
+        "container_name": "my-container",
+        "timestamp": "2021-09-01T12:34:56Z",
+        "container_cpu_usage_percent": 0.07,
+        "container_memory_usage_bytes": 123456,
+        "container_memory_limit_bytes": 123456,
+        "container_memory_usage_percent": 0.79,
+        "container_network_receive_bytes_total": 123456,
+        "container_network_transmit_bytes_total": 123456,
+        "container_block_read_bytes": 123456,
+        "container_block_write_bytes": 123456,
+        "container_pids": 123
+      }
+    ]
+  }
+}
+```
+
 ## Development
 
 1. Clone the repository:
