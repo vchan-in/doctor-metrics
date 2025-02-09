@@ -11,13 +11,12 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"vchan.in/docker-health/types"
+	"vchan.in/doctor-metrics/types"
 )
 
 func getMetrics(containerID string) (types.ContainerMetrics, error) {
 	/*
-		Get container metrics using docker stats command.
-		Example output of "docker stats --no-stream --format '{{json .}}' f3f177b2b3b4":
+		Get container metrics.
 
 		Function input is a container ID like "f3f177b2b3b4".
 		Function returns a ContainerMetrics struct with container metrics.
@@ -121,6 +120,25 @@ func convertToBytes(s string) (int64, error) {
 }
 
 func GetDockerMetrics(c echo.Context) error {
+	/*
+		Get metrics for all containers.
+
+		[
+			{
+			"Container": "f3f177b2b3b4",
+			"Name": "my-container",
+			"CPUPerc": "0.07%",
+			"MemUsage": "34.5MiB / 1.945GiB",
+			"MemPerc": "0.79%",
+			"NetIO": "1.2MB / 3.4MB",
+			"BlockIO": "73.7kB / 0B",
+			"PIDs": 123
+			},
+			...
+		]
+
+		Function returns a JSON response with the container metrics.
+	*/
 	listMetrics := []types.ContainerMetrics{}
 
 	// List container IDs using docker ps
@@ -134,10 +152,17 @@ func GetDockerMetrics(c echo.Context) error {
 	metricsChan := make(chan types.ContainerMetrics, len(containerIDs))
 	errorChan := make(chan error, len(containerIDs))
 
+	// Limit the number of concurrent goroutines
+	concurrencyLimit := 10
+	sem := make(chan struct{}, concurrencyLimit)
+
 	for _, containerID := range containerIDs {
 		wg.Add(1)
 		go func(containerID string) {
 			defer wg.Done()
+			sem <- struct{}{}        // Acquire semaphore
+			defer func() { <-sem }() // Release semaphore
+
 			metrics, err := getMetrics(containerID)
 			if err != nil {
 				errorChan <- err
@@ -173,8 +198,7 @@ func GetDockerMetrics(c echo.Context) error {
 
 func GetMetricsContainerByName(c echo.Context) error {
 	/*
-		Get metrics for a specific container using docker stats command.
-		Example output of "docker stats --no-stream --format '{{json .}}'":
+		Get metrics for a specific container.
 
 		{
 		  "Container": "f3f177b2b3b4",
@@ -220,8 +244,7 @@ func GetMetricsContainerByName(c echo.Context) error {
 
 func GetMetricsContainerByID(c echo.Context) error {
 	/*
-		Get metrics for a specific container using docker stats command.
-		Example output of "docker stats --no-stream --format '{{json .}}'":
+		Get metrics for a specific container.
 
 		{
 		  "Container": "f3f177b2b3b4",

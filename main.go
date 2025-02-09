@@ -1,7 +1,7 @@
 package main
 
 import (
-	"vchan.in/docker-health/cmd"
+	"vchan.in/doctor-metrics/cmd"
 )
 
 var Version string

@@ -1,4 +1,4 @@
-module vchan.in/docker-health
+module vchan.in/doctor-metrics
 
 go 1.23.4
 

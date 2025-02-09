@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"vchan.in/docker-health/types"
+	"vchan.in/doctor-metrics/types"
 )
 
 func GetRoot(c echo.Context, version string) error {
@@ -14,6 +14,6 @@ func GetRoot(c echo.Context, version string) error {
 	*/
 	return c.JSON(http.StatusOK, types.APIResponse{
 		Status:  "success",
-		Message: "Docker Health API v" + version,
+		Message: "Doctor Metrics API v" + version,
 	})
 }

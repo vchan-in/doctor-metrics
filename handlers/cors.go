@@ -16,7 +16,7 @@ func HandleCORS(next echo.HandlerFunc) echo.HandlerFunc {
 		It sets the Access-Control-Allow-Credentials header to true.
 	*/
 	return func(c echo.Context) error {
-		origin := os.Getenv("DH_CORS_ORIGIN")
+		origin := os.Getenv("DM_CORS_ORIGIN")
 		if origin == "" {
 			origin = "*"
 		}

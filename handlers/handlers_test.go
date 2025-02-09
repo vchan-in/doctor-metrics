@@ -13,7 +13,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
-	"vchan.in/docker-health/types"
+	"vchan.in/doctor-metrics/types"
 )
 
 var testContainerID string
@@ -26,6 +26,9 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
+	// Remove the container if it exists
+	cmd = exec.Command("docker", "rm", "-f", "test-alpine-container")
+	_ = cmd.Run()
 	// Start a container from the alpine image
 	cmd = exec.Command("docker", "run", "--name", "test-alpine-container", "-d", "alpine", "sleep", "3600")
 	output, err := cmd.Output()
@@ -61,7 +64,7 @@ func TestGetRoot(t *testing.T) {
 			t.Fatalf("Failed to unmarshal response: %v", err)
 		}
 		assert.Equal(t, "success", response.Status)
-		assert.Equal(t, "Docker Health API v"+version, response.Message)
+		assert.Equal(t, "Doctor Metrics API v"+version, response.Message)
 	}
 }
 
@@ -75,8 +78,8 @@ func TestHandleCORS(t *testing.T) {
 		return c.String(http.StatusOK, "test")
 	})
 
-	os.Setenv("DH_CORS_ORIGIN", "*")
-	defer os.Unsetenv("DH_CORS_ORIGIN")
+	os.Setenv("DM_CORS_ORIGIN", "*")
+	defer os.Unsetenv("DM_CORS_ORIGIN")
 
 	if assert.NoError(t, handler(c)) {
 		assert.Equal(t, "*", rec.Header().Get("Access-Control-Allow-Origin"))
@@ -97,10 +100,10 @@ func TestHandleAuthMiddleware(t *testing.T) {
 		return c.String(http.StatusOK, "test")
 	})
 
-	os.Setenv("DH_USERNAME", "user")
-	os.Setenv("DH_PASSWORD", "password@123")
-	defer os.Unsetenv("DH_USERNAME")
-	defer os.Unsetenv("DH_PASSWORD")
+	os.Setenv("DM_USERNAME", "user")
+	os.Setenv("DM_PASSWORD", "password@123")
+	defer os.Unsetenv("DM_USERNAME")
+	defer os.Unsetenv("DM_PASSWORD")
 
 	auth := "Basic " + base64.StdEncoding.EncodeToString([]byte("user:password@123"))
 	req.Header.Set("Authorization", auth)
@@ -121,10 +124,10 @@ func TestHandleAuthMiddlewareInvalidCredentials(t *testing.T) {
 		return c.String(http.StatusOK, "test")
 	})
 
-	os.Setenv("DH_USERNAME", "user")
-	os.Setenv("DH_PASSWORD", "password@123")
-	defer os.Unsetenv("DH_USERNAME")
-	defer os.Unsetenv("DH_PASSWORD")
+	os.Setenv("DM_USERNAME", "user")
+	os.Setenv("DM_PASSWORD", "password@123")
+	defer os.Unsetenv("DM_USERNAME")
+	defer os.Unsetenv("DM_PASSWORD")
 
 	auth := "Basic " + base64.StdEncoding.EncodeToString([]byte("user:wrongpassword"))
 	req.Header.Set("Authorization", auth)
@@ -161,32 +164,25 @@ func TestGetDockerMetrics(t *testing.T) {
 
 func TestGetDockerMetricsError(t *testing.T) {
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodGet, "/api//metrics", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/metrics", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	// Mock the exec.Command function to simulate an error
-	execCommand = func(command string, args ...string) *exec.Cmd {
-		if command == "docker" && args[0] == "ps" && args[1] == "-q" {
-			// Simulate an error for the docker ps command
-			return exec.Command("false")
-		}
-		return exec.Command(command, args...)
+	// Mock exec.Command to simulate an error
+	execCommand = func(name string, arg ...string) *exec.Cmd {
+		return exec.Command("false") // Simulate a command that fails
 	}
-	defer func() { execCommand = exec.Command }()
+	defer func() { execCommand = exec.Command }() // Restore original exec.Command
 
-	err := GetDockerMetrics(c)
-	if assert.Error(t, err) {
-		httpError, ok := err.(*echo.HTTPError)
-		if assert.True(t, ok) {
-			assert.Equal(t, http.StatusInternalServerError, httpError.Code)
-		}
+	if assert.Error(t, GetDockerMetrics(c)) {
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		assert.Contains(t, rec.Body.String(), "Failed to retrieve container list")
 	}
 }
 
 func TestGetMetricsContainerByName(t *testing.T) {
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodGet, "/api//metrics/containerName", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/metrics/containerName", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetParamNames("containerName")
@@ -209,7 +205,7 @@ func TestGetMetricsContainerByName(t *testing.T) {
 
 func TestGetMetricsContainerByNameError(t *testing.T) {
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodGet, "/api//metrics/containerName", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/metrics/containerName", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetParamNames("containerName")
@@ -232,7 +228,7 @@ func TestGetMetricsContainerByNameError(t *testing.T) {
 
 func TestGetMetricsContainerByID(t *testing.T) {
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodGet, "/api//metrics/containerID", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/metrics/containerID", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetParamNames("containerID")
@@ -255,7 +251,7 @@ func TestGetMetricsContainerByID(t *testing.T) {
 
 func TestGetMetricsContainerByIDError(t *testing.T) {
 	e := echo.New()
-	req := httptest.NewRequest(http.MethodGet, "/api//metrics/containerID", nil)
+	req := httptest.NewRequest(http.MethodGet, "/api/metrics/containerID", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetParamNames("containerID")

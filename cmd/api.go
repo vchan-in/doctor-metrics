@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/time/rate"
-	"vchan.in/docker-health/handlers"
+	"vchan.in/doctor-metrics/handlers"
 )
 
 func Server(version string) {
@@ -38,10 +38,22 @@ func Server(version string) {
 	e.GET("api/metrics/:containerName", handlers.GetMetricsContainerByName)
 	e.GET("api/metrics/:containerID", handlers.GetMetricsContainerByID)
 
-	httpPort := os.Getenv("DH_SERVER_PORT")
+	httpPort := os.Getenv("DM_SERVER_PORT")
 	if httpPort == "" {
 		httpPort = ":9095" // Default port if not provided
 	}
+	slog.Info(`
+    ____             __             
+   / __ \____  _____/ /_____  _____ 
+  / / / / __ \/ ___/ __/ __ \/ ___/ 
+ / /_/ / /_/ / /__/ /_/ /_/ / /     
+/_____/\____/\____\__/\____/_/      
+   /  |/  /__  / /______(_)_________
+  / /|_/ / _ \/ __/ ___/ / ___/ ___/
+ / /  / /  __/ /_/ /  / / /__(__  ) 
+/_/  /_/\___/\__/_/  /_/\___/____/  v` + version + `
+									
+	`)
 	slog.Info("Server started at 0.0.0.0:" + httpPort)
 	server := e.Start(":" + httpPort)
 	if server != nil {

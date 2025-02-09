@@ -18,8 +18,8 @@ func HandleAuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	*/
 	return func(c echo.Context) error {
 		// Retrieve the environment variables
-		username := os.Getenv("DH_USERNAME")
-		password := os.Getenv("DH_PASSWORD")
+		username := os.Getenv("DM_USERNAME")
+		password := os.Getenv("DM_PASSWORD")
 
 		// Check if the provided credentials are valid
 		auth := c.Request().Header.Get("Authorization")

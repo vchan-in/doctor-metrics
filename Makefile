@@ -10,5 +10,5 @@ run: build
 build: 
 	@go build -o bin/dh main.go
 
-# test:
-# 	@go test ./... -cover
+test:
+	@go test -v ./...
