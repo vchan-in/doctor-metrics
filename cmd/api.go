@@ -83,6 +83,6 @@ func setupLogger(e *echo.Echo) {
 
 func requiredEnvVar(envVar string) {
 	if os.Getenv(envVar) == "" {
-		log.Fatalf("Required environment variable %s not set", envVar)
+		log.Fatalf("FATAL Required environment variable %s not set", envVar)
 	}
 }
