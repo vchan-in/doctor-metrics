@@ -2,6 +2,9 @@ package handlers
 
 import (
 	"encoding/base64"
+	"fmt"
+	"log/slog"
+	"net"
 	"os"
 	"strings"
 
@@ -38,5 +41,45 @@ func HandleAuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		return next(c)
+	}
+}
+
+func FilterIP(next echo.HandlerFunc) echo.HandlerFunc {
+	/*
+		FilterIP is a middleware function that only allows requests from specific IP addresses or CIDR ranges listed in the DM_ALLOWED_IPS environment variable.
+		If the request is from localhost, an HTTP 401 Unauthorized error is returned.
+	*/
+	return func(c echo.Context) error {
+		// Retrieve the environment variable
+		allowedIPs := os.Getenv("DM_ALLOWED_IPS")
+		if allowedIPs == "" {
+			slog.Error("DM_ALLOWED_IPS environment variable not set")
+			return echo.ErrUnauthorized
+		}
+
+		// Get the client's IP address
+		clientIP := c.RealIP()
+
+		// Additional checks for headers
+		if clientIP == "" {
+			clientIP = c.Request().Header.Get("X-Forwarded-For")
+		}
+		if clientIP == "" {
+			clientIP = c.Request().Header.Get("X-Real-IP")
+		}
+
+		// Check if the client's IP address is in the allowed IPs list or CIDR ranges
+		for _, ip := range strings.Split(allowedIPs, ",") {
+			if ip == clientIP {
+				return next(c)
+			}
+			_, cidr, err := net.ParseCIDR(ip)
+			if err == nil && cidr.Contains(net.ParseIP(clientIP)) {
+				return next(c)
+			}
+		}
+
+		slog.Error(fmt.Sprintf("Unauthorized client IP: %s", clientIP))
+		return echo.ErrUnauthorized
 	}
 }
