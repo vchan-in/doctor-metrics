@@ -25,7 +25,7 @@ A lightweight application for real-time Docker container metrics (CPU, memory, n
 
 ### From Release
 
-1. Download the latest release for your operating system from the [GitHub release section](https://github.com/yourusername/doctor-metrics/releases).
+1. Download the latest release for your operating system from the [GitHub release section](https://github.com/vchan-in/doctor-metrics/releases).
 
 2. Extract the downloaded file.
 
@@ -41,7 +41,7 @@ A lightweight application for real-time Docker container metrics (CPU, memory, n
     ./dh
     ```
 
-2. The server will start on the port specified in the [.env](http://_vscodecontentref_/1) file (default is `9095`).
+2. The server will start on the port specified in the `.env` file (default is `9095`).
 
 ## API Endpoints
 
@@ -104,11 +104,11 @@ The application uses basic authentication to secure the API endpoints. You need 
     make build
     ```
 
-2. Deploy the binary ([dh](http://_vscodecontentref_/2)) to your server.
+2. Deploy the binary `dh` to your server.
 
 3. Ensure Docker is installed and running on the server.
 
-4. Set up the environment variables on the server. You can use a [.env](http://_vscodecontentref_/3) file or set them directly in the environment.
+4. Set up the environment variables on the server. You can use a `.env` file or set them directly in the environment.
 
 5. Start the application:
     ```sh
