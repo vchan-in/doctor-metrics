@@ -24,7 +24,6 @@ func Server(version string) {
 	e.HideBanner = true // Hide the echo server banner to avoid server version disclosure in logs
 
 	// Root level middleware
-	setupLogger(e)
 	e.Use(middleware.Secure())                                                         // Use secure middleware to set security headers
 	e.Use(middleware.Recover())                                                        // Recover middleware recovers from panics anywhere in the chain
 	e.Use(handlers.FilterIP)                                                           // Filter IP middleware
@@ -59,25 +58,6 @@ func Server(version string) {
 	server := e.Start(":" + httpPort)
 	if server != nil {
 		slog.Error(server.Error())
-	}
-}
-
-func setupLogger(e *echo.Echo) {
-	logLevel := os.Getenv("DM_LOG_LEVEL")
-	if logLevel == "debug" {
-		e.Use(middleware.Logger())
-	} else {
-		var level slog.Level
-		switch logLevel {
-		case "warn":
-			level = slog.LevelWarn
-		case "error", "fatal":
-			level = slog.LevelError
-		default:
-			level = slog.LevelInfo
-		}
-		logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: level}))
-		slog.SetDefault(logger)
 	}
 }
 
