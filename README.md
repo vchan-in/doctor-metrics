@@ -18,7 +18,7 @@ A lightweight application for real-time Docker container metrics (CPU, memory, n
 - Retrieve metrics for all running Docker containers.
 - Retrieve metrics for a specific container by name or ID.
 - Basic authentication middleware.
-- CORS support.
+- Whitelist client IPs
 - Rate limiting.
 
 ## Installation
@@ -117,10 +117,11 @@ The application uses basic authentication to secure the API endpoints. You need 
 
 ## Environment Variables
 
+- `DM_LOG_LEVEL` - Log level between debug, info, warn, error, fatal
 - `DM_USERNAME` - Username for basic authentication.
 - `DM_PASSWORD` - Password for basic authentication.
-- `DM_CORS_ORIGIN` - Allowed origins for CORS.
 - `DM_SERVER_PORT` - Port for the server to listen on.
+- `DM_ALLOWED_IPS` - Allowed client IPs and CIDRs.
 
 ## License
 
