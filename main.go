@@ -7,6 +7,6 @@ import (
 var Version string
 
 func main() {
-	Version = "1.0.0"
+	Version = "1.2.0"
 	cmd.Server(Version)
 }

@@ -1,7 +1,3 @@
-ifeq (,$(wildcard .env))	# if .env file does not exist then copy env.example to .env
-	cp env.example .env
-endif
-
 .PHONY: run
 
 run: build-test

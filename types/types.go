@@ -2,6 +2,7 @@ package types
 
 // ContainerMetrics struct to store container metrics.
 type ContainerMetrics struct {
+	Active                             bool    `json:"active"`                                 // Status of the API response e.g. "success"
 	ContainerID                        string  `json:"container_id"`                           // Container ID e.g. "f3f177b2b3b4"
 	ContainerName                      string  `json:"container_name"`                         // Container name e.g. "my-container"
 	Timestamp                          string  `json:"timestamp"`                              // Timestamp in RFC3339 format e.g. "2021-09-01T12:34:56Z"

@@ -24,9 +24,14 @@ func Server(version string) {
 	e.HideBanner = true // Hide the echo server banner to avoid server version disclosure in logs
 
 	// Root level middleware
-	e.Use(middleware.Secure())                                                         // Use secure middleware to set security headers
-	e.Use(middleware.Recover())                                                        // Recover middleware recovers from panics anywhere in the chain
-	e.Use(handlers.FilterIP)                                                           // Filter IP middleware
+	e.Use(middleware.Secure())  // Use secure middleware to set security headers
+	e.Use(middleware.Recover()) // Recover middleware recovers from panics anywhere in the chain
+	e.Use(handlers.FilterIP)    // Filter IP middleware
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowMethods: []string{echo.GET},
+	})) // CORS middleware
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(5)))) // Rate limiter middleware with a limit of 5 requests per second
 	e.Use(handlers.HandleAuthMiddleware)                                               // Auth middleware
 
