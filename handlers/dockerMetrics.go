@@ -89,6 +89,9 @@ func getMetrics(containerID string) (types.ContainerMetrics, error) {
 	pids, _ := strconv.Atoi(ds.PIDs)
 	metrics.ContainerPIDs = pids
 
+	// Set active status based on the presence of PIDs
+	metrics.Active = pids > 0
+
 	return metrics, nil
 }
 
@@ -121,7 +124,7 @@ func convertToBytes(s string) (int64, error) {
 
 func GetDockerMetrics(c echo.Context) error {
 	/*
-		Get metrics for all containers.
+		Get metrics for all containers, including offline ones.
 
 		[
 			{
@@ -141,8 +144,8 @@ func GetDockerMetrics(c echo.Context) error {
 	*/
 	listMetrics := []types.ContainerMetrics{}
 
-	// List container IDs using docker ps
-	containerIDsBytes, err := exec.Command("docker", "ps", "-q").Output()
+	// List all container IDs (including stopped ones) using docker ps -a
+	containerIDsBytes, err := exec.Command("docker", "ps", "-aq").Output()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve container list")
 	}
