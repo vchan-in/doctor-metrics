@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test</title>
+    <script>
+        async function fetchMetrics() {
+            try {
+                const response = await fetch('http://localhost:9095/api/metrics', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Basic ' + btoa('user:password@123')
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                const data = await response.json();
+                document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('output').textContent = 'Fetch error: ' + error.message;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>CORS Test</h1>
+    <button onclick="fetchMetrics()">Fetch Metrics</button>
+    <pre id="output"></pre>
+</body>
+</html>
