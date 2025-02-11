@@ -28,9 +28,10 @@ func Server(version string) {
 	e.Use(middleware.Recover()) // Recover middleware recovers from panics anywhere in the chain
 	e.Use(handlers.FilterIP)    // Filter IP middleware
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-		AllowMethods: []string{echo.GET},
+		AllowOrigins:     []string{"*"},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+		AllowMethods:     []string{echo.GET},
+		AllowCredentials: true,
 	})) // CORS middleware
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(rate.Limit(5)))) // Rate limiter middleware with a limit of 5 requests per second
 	e.Use(handlers.HandleAuthMiddleware)                                               // Auth middleware
